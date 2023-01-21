@@ -11,3 +11,6 @@ export async function moveUp(offset: number) {
 export async function moveDown(offset: number) {
   await mouse.move(down(offset));
 }
+export async function getPosition() {
+  return await mouse.getPosition();
+}
