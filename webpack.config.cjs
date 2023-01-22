@@ -20,4 +20,3 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
 };
-// "-": "^0.0.1",

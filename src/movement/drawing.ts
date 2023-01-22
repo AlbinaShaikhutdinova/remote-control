@@ -5,11 +5,12 @@ import {
   up,
   down,
   Button,
-  centerOf,
-  Region,
   straightTo,
   Point,
+  Region,
+  screen,
 } from '@nut-tree/nut-js';
+import Jimp from 'jimp';
 export async function drawRectangle(height: number, width: number) {
   await mouse.pressButton(Button.LEFT);
   await mouse.move(right(width));
@@ -31,4 +32,17 @@ export async function drawCircle(radius: number) {
     await drawPoint(i);
   }
   mouse.config.mouseSpeed = 200;
+}
+export async function printScreen() {
+  try {
+    const { x, y } = await mouse.getPosition();
+    const r = new Region(x, y, 200, 200);
+    const buffer = await screen.grabRegion(r);
+    const imgBuffer = await buffer.toRGB();
+    const img = new Jimp({ data: imgBuffer.data, width: 200, height: 200 }); // await Jimp.read(Buffer.from(buffer.data));
+    return await img.getBase64Async('image/png');
+  } catch (err) {
+    console.log(err);
+    return '';
+  }
 }
