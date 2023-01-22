@@ -12,12 +12,9 @@ export const wsInit = () => wss.on('connection', (ws) => connection(ws));
 function connection(ws: WebSocket) {
   const address = wss.address() as undefined as AddressInfo;
   console.log(`Started ws connection on port ${address.port}`);
-  const duplex = createWebSocketStream(ws, {
-    encoding: 'utf8',
-    decodeStrings: false,
-    defaultEncoding: 'utf8',
-  });
-  duplex.on('data', async (data) => {
+  const duplex = createWebSocketStream(ws, { decodeStrings: false });
+  duplex.on('data', async (rawData) => {
+    const data = rawData.toString();
     console.log('received:', data);
     const command = data.toString().split(' ')[0];
     const prop = data.toString().split(' ')[1] || '';
@@ -25,40 +22,40 @@ function connection(ws: WebSocket) {
       case 'mouse_position':
         const position = await getPosition();
         const formatPosition = `${position.x},${position.y}`;
-        ws.send(`${command} ${formatPosition}`);
+        duplex.write(`${command} ${formatPosition}`);
         break;
       case 'mouse_left':
         await moveLeft(Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'mouse_right':
         await moveRight(Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'mouse_up':
         await moveUp(Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'mouse_down':
         await moveDown(Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'draw_square':
         await drawRectangle(Number(prop), Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'draw_rectangle':
-        const prop2 = data.toString().split(' ')[1];
+        const prop2 = data.toString().split(' ')[2];
         await drawRectangle(Number(prop), Number(prop2));
-        ws.send(`${command}_${prop}_${prop2}`);
+        duplex.write(`${command}_${prop}_${prop2}`);
         break;
       case 'draw_circle':
         await drawCircle(Number(prop));
-        ws.send(`${command}_${prop}`);
+        duplex.write(`${command}_${prop}`);
         break;
       case 'prnt_scrn':
         const img = await printScreen();
-        ws.send(`prnt_scrn ${img.replace('data:image/png;base64,', '')}`);
+        duplex.write(`prnt_scrn ${img.replace('data:image/png;base64,', '')}`);
         break;
     }
   });
