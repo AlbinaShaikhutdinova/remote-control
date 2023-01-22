@@ -2,15 +2,16 @@ import { createWebSocketStream, WebSocketServer, WebSocket, AddressInfo } from '
 // @ts-ignore
 import { moveLeft, moveRight, moveUp, moveDown, getPosition } from '../movement/mouse.ts';
 // @ts-ignore
-import { drawRectangle, drawCircle, printScreen } from '../movement/drawing.ts';
-
-const wss = new WebSocketServer({ port: 8080 });
+import { drawRectangle, drawCircle } from '../movement/drawing.ts';
+// @ts-ignore
+import { printScreen } from '../movement/printScreen.ts';
+export const wss = new WebSocketServer({ port: 8080 });
 
 export const wsInit = () => wss.on('connection', (ws) => connection(ws));
 
 function connection(ws: WebSocket) {
   const address = wss.address() as undefined as AddressInfo;
-  console.log(`Started ws connection ${address.port}`);
+  console.log(`Started ws connection on port ${address.port}`);
   const duplex = createWebSocketStream(ws, {
     encoding: 'utf8',
     decodeStrings: false,
@@ -23,8 +24,8 @@ function connection(ws: WebSocket) {
     switch (command) {
       case 'mouse_position':
         const position = await getPosition();
-        const formatPosition = `${position.x}px,${position.y}px`;
-        ws.send(`${command}_${formatPosition}`);
+        const formatPosition = `${position.x},${position.y}`;
+        ws.send(`${command} ${formatPosition}`);
         break;
       case 'mouse_left':
         await moveLeft(Number(prop));
